@@ -36,8 +36,21 @@
   background-color: white;
   border-radius: 8px;
   margin: 80px 40px;
-  padding: 16px;
+  padding: 48px 16px;
 }
+
+.logo{
+  padding-bottom : 32px;
+}
+
+.formControl{
+  margin: 32px auto;
+}
+
+.fieldSet{
+  margin-bottom: 16px;
+}
+
 
 @keyframes App-logo-spin {
   from {
