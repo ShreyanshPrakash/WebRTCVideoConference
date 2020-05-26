@@ -5,6 +5,8 @@ import {
 } from '@material-ui/core';
 import AccountCircleOutlinedIcon from '@material-ui/icons/AccountCircleOutlined';
 
+import './logo.style.scss';
+
 function LogoComponent() {
 
 

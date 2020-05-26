@@ -1,23 +1,26 @@
 import React from 'react';
 import './App.css';
 
-// import {
+import {
+  Container
+} from '@material-ui/core';
+import {
+  LogoComponent,
+  FormBuilderComponent,
+} from "src/reuseableComp";
 
-// } from "src/"
+import {
+  createMeetingForm,
+} from "src/components/createMeetingForm.config";
 
 function App() {
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-  }
 
   return (
     <React.Fragment>
       <Container maxWidth="xs" className="container">
-        <Grid container spacing={2} justify="center" className="logo">
-          <AccountCircleOutlinedIcon />
-        </Grid>
-        
+        <LogoComponent />
+        <FormBuilderComponent formConfig={createMeetingForm}/>
       </Container>
     </React.Fragment>
   );
