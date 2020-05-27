@@ -1,0 +1,5 @@
+1. Should there be only one submit button for a form ?
+
+2. Passing the methods for event changes for re-useable components through config file.
+
+3. How to best create the payload on submit ?

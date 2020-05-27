@@ -1,6 +1,7 @@
 import React from 'react';
 import {
-  Container, Grid, Button, FormControl, TextField, FormHelperText, FormLabel, Divider
+  Container, Grid, Button, FormControl, TextField, FormHelperText, FormLabel, Divider,
+  CircularProgress, LinearProgress 
 } from '@material-ui/core';
 
 
@@ -8,6 +9,8 @@ import './formBuilder.style.scss';
 
 function FormBuilderComponent({
   formConfig,
+  loading,
+  error,
   ...rest
 }) {
 
@@ -61,14 +64,21 @@ function FormBuilderComponent({
   */
   const handleSubmit = (event) => {
     event.preventDefault();
-    [...event.target].map( item => console.log(item.name))
+    // console.log(event.target.createUserName)
+    [...event.target].map( item => console.log(`${item.type} : ${item.name} : ${item.value}`))
+  }
+
+  const handleFormChange = (event) => {
+    event.preventDefault();
+    console.log(event.target)
+    // [...event.target].map( item => console.log(item.name))
   }
 
   return (
     <React.Fragment>
       <Container className="formBuilderWrapper">
         <Grid container justify="center" spacing={2}>
-          <form onSubmit={handleSubmit} autoComplete="off" className="form">
+          <form onSubmit={handleSubmit} onChange={handleFormChange} autoComplete="off" className="form">
             {
               formConfig &&
               formConfig.fieldSets.map((fieldSet, index) => {
@@ -78,6 +88,8 @@ function FormBuilderComponent({
                   buttonText,
                   fields,
                   divider,
+                  buttonName,
+                  buttonValue
                 } = fieldSet;
                 return (
                   <Grid container className="fieldSet" key={index}>
@@ -87,6 +99,7 @@ function FormBuilderComponent({
                       className="formControl"
                       margin="normal"
                       fullWidth
+                      name="fieldSet"
                     >
                       {
                         formLabel &&
@@ -106,8 +119,17 @@ function FormBuilderComponent({
                         fullWidth
                         type="submit"
                         variant="contained"
+                        name={buttonName}
+                        value={buttonValue}
+                        // disabled={loading}
                       >
                         {buttonText}
+                        {/* {loading && <CircularProgress color="secondary" size={20} />} */}
+                        {/* {
+                          loading 
+                          ? <CircularProgress color="secondary" size={20} />
+                          : buttonText
+                        } */}
                       </Button>
                     </FormControl>
                     { divider && <Divider className="divider"/> }

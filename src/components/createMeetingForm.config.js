@@ -5,6 +5,9 @@ const createMeetingForm = {
             // formLabel: "Do you want to create a private meeting",
             // formHelperText: "This will be used to create",
             buttonText: "Create",
+            buttonName: "createButton",
+            buttonValue: "create",
+            onSubmitValidateFieldsName: ["createUserName", "createMeetingName"],
             divider: true,
             fields: [
                 {
@@ -37,6 +40,8 @@ const createMeetingForm = {
             // formLabel: "Do you want to join a private meeting",
             // formHelperText: "This will be used to create",
             buttonText: "Join",
+            buttonName: "joinButton",
+            buttonValue: "join",
             fields: [
                 {
                     type: "text",

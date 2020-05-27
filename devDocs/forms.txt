@@ -1,0 +1,24 @@
+
+For every input element, always provide name and value.
+They are like key value pair.
+
+
+1. OnSubmit to get the whole data
+
+[...event.target].map( field => field.name/value/type)
+
+event.target["nameOfAField"].value : this is also one way u can directly target a field
+
+2. Handling data change.
+
+always use onSubmit and onChange.
+
+To get the final value and final validation : onSubmit
+To keep sync of the data and realtime changes : onChange
+
+In onChange, the input field that is being changed will be passed as event.
+So u can take event.target.name : event.target.value and update the state of the form.
+If some validation is wrong, then show that as well.
+
+
+3. How to handle prepopulate of the form.
