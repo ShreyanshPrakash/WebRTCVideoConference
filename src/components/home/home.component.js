@@ -12,18 +12,17 @@ import {
     createMeetingFormConfig,
     joinMeetingFormConfig,
 } from "src/components/meetingForm.config";
-import{
-    CreateMeetingModel,
-    JoinMeetingModel
-} from 'src/models';
+
 
 import './home.style.scss';
 
 function HomeComponent() {
 
-    const [createMeetingState, setCreateMeetingState] = useState();
-
     const handleCreateMeetingSubmit = useCallback( (submitData) => {
+        console.log(submitData);
+    });
+
+    const handleJoinMeetingSubmit = useCallback( (submitData) => {
         console.log(submitData);
     })
 
@@ -35,11 +34,11 @@ function HomeComponent() {
                     <LogoComponent />
                     <FormBuilderComponent
                         formConfig={createMeetingFormConfig}
-                        // formData={}
-                        onFormSubmit={handleCreateMeetingSubmit}
+                        onFormSubmit={handleJoinMeetingSubmit}
                     />
                     <FormBuilderComponent
                         formConfig={joinMeetingFormConfig}
+                        onFormSubmit={handleJoinMeetingSubmit}
                     />
                 </Grid>
             </Container>

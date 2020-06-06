@@ -50,13 +50,14 @@ const handleFormChange = (event) => {
   event.preventDefault();
   event.persist();
 
+  let fieldValue = getFormFieldValue(event);
+
   const {
     formstatekey,
     fieldsetkey,
     fieldkey,
   } = event.target.dataset;
 
-  let fieldValue = getFormFieldValue(event);
   setFormBuilderState( state => {
     return{
       ...state,
