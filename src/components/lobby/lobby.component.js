@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import {
     Container,
@@ -9,40 +10,58 @@ import {
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 
 import {
+    getQueryParams,
+} from 'src/utils';
+
+import io from 'socket.io-client';
+
+import {
     useGetUserMedia,
 } from 'src/hooks';
-import{
+import {
     VideoPlaceholderComponent,
 } from 'src/reuseableComponents';
 
 import './lobby.style.scss';
+import { MeetingInfoModel } from 'src/models';
 
-function LobbyComponent(){
+function LobbyComponent() {
 
     const [userStream, setUserStream] = useState("");
     const [participantsStream, setParticipantsStream] = useState("");
+    const [meetingInfo, setMeetingInfo] = useState(new MeetingInfoModel());
+
+    const location = useLocation();
 
     const userVideoRef = useRef('');
 
     const mediaStream = useGetUserMedia({
         video: true,
         audio: true,
-    });
+    }, true);
 
-    useEffect( () => {
-        if( mediaStream ){
+    const meetingRoom = io.connect('http://localhost:3000/chat')
+
+
+    useEffect(() => {
+        let query = getQueryParams(location.search)
+        setMeetingInfo(query);
+    }, [])
+
+    useEffect(() => {
+        if (mediaStream) {
             userVideoRef.current.srcObject = mediaStream;
             userVideoRef.current.play()
         }
     }, [mediaStream])
 
 
-    return(
+    return (
         <React.Fragment>
             <Container className="lobbyWrapper">
                 <Grid container justify="space-around" alignItems="center">
                     <Grid item className="videoFeedWrapper">
-                        <VideoPlaceholderComponent 
+                        <VideoPlaceholderComponent
                             ref={userVideoRef}
                             config={{
                                 muted: true,
@@ -51,7 +70,10 @@ function LobbyComponent(){
                     </Grid>
                     <Grid item className="meetingInfoWrapper">
                         <Typography>
-                            Meeting name
+                            Welcome {meetingInfo.userName}
+                        </Typography>
+                        <Typography>
+                            Meeting name : {meetingInfo.meetingName}
                         </Typography>
                         <Button
                             fullWidth

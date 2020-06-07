@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 
-function useGetUserMedia(mediaConstraints){
+function useGetUserMedia(mediaConstraints, stopOnNavigate){
 
     const [userMediaStream, setUserMediaStream] = useState("");
 
@@ -15,7 +15,7 @@ function useGetUserMedia(mediaConstraints){
         }
 
         return () => {
-            if( userMediaStream ){
+            if( userMediaStream && stopOnNavigate){
                 userMediaStream.getTracks().forEach(function(track) {
                     track.stop();
                 });
