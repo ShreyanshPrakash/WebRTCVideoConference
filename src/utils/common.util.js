@@ -56,6 +56,10 @@ function getQueryParams( url ){
     return queryParams;
 }
 
+function getuuid(){
+    return Math.random().toString(16).replace('0.', '');
+}
+
 
 
 export{
@@ -66,4 +70,5 @@ export{
     setDataToSessionStorage,
     removeDataFromSessionStorage,
     getQueryParams,
+    getuuid,
 }

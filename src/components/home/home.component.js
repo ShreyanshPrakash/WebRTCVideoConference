@@ -14,6 +14,9 @@ import {
     createMeetingFormConfig,
     joinMeetingFormConfig,
 } from "src/components/home/meetingForm.config";
+import {
+    getuuid,
+} from 'src/utils';
 
 
 import './home.style.scss';
@@ -23,12 +26,28 @@ function HomeComponent() {
     const history = useHistory();
 
     const handleCreateMeetingSubmit = useCallback( (submitData) => {
-        console.log(submitData);
-        history.push("/lobby");
+        const {
+            createMeetingForm: {
+                createMeeting: {
+                    meetingName,
+                    userName,
+                }
+            }
+        } = submitData;
+        history.push(`/lobby?userName=${userName}&meetingName=${meetingName}&meetingId=${getuuid()}&type=create`);
     });
 
     const handleJoinMeetingSubmit = useCallback( (submitData) => {
-        console.log(submitData);
+        const {
+            joinMeetingForm: {
+                joinMeeting: {
+                    meetingName,
+                    userName,
+                }
+            }
+        } = submitData;
+        // need to parse meeting name.
+        history.push(`/lobby?userName=${userName}&meetingName=${meetingName}&type=join`);
     })
 
 

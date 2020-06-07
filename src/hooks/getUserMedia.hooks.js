@@ -7,11 +7,21 @@ function useGetUserMedia(mediaConstraints){
 
     // need to handle permission denied and other cases.
     useEffect( () => {
-        window.navigator.mediaDevices.getUserMedia(mediaConstraints)
+        if( !userMediaStream ){
+            window.navigator.mediaDevices.getUserMedia(mediaConstraints)
             .then( stream => {
                 setUserMediaStream(stream);
             })
-    }, [])
+        }
+
+        return () => {
+            if( userMediaStream ){
+                userMediaStream.getTracks().forEach(function(track) {
+                    track.stop();
+                });
+            }
+        }
+    }, [userMediaStream])
 
     return userMediaStream;
 

@@ -15,6 +15,9 @@ const {
     initLogFile,
     log,
 } = require('./utils');
+const {
+    socketConnection,
+} = require('./routes');
 
 
 
@@ -32,6 +35,8 @@ app.use(
 // iniLogFile();
 
 // initLogFile();
+
+socket.on( 'connection', socketConnection)
 
 
 
