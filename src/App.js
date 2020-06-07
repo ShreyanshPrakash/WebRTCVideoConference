@@ -10,6 +10,16 @@ import {
   LinearProgress,
 } from '@material-ui/core';
 
+import { getEnvVars } from 'src/config/env.config';
+import { setEnvVars } from 'src/utils';
+import { apiEndpoints } from 'src/config/api.config';
+import { 
+  setEnvVarsForHttpClient, 
+  setEnvEndpoints, 
+  createAxiosInstance 
+} from 'src/services/http.service';
+
+
 import './App.css';
 
 
@@ -23,9 +33,17 @@ const LobbyComponent = React.lazy(
     .then( module => ({default: module.LobbyComponent}))
 )
 
+// Setting initial env vars
+  setEnvVars(getEnvVars());
+  setEnvVarsForHttpClient(getEnvVars());
+  setEnvEndpoints(apiEndpoints);
+  createAxiosInstance();
 
 
 function App() {
+
+
+
 
 
   return (

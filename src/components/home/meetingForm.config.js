@@ -24,6 +24,7 @@ const createMeetingFormConfig = [
                         inputProps: {
                             maxLength: 50,
                             required: true,
+                            // pattern: "[A-Za-z]"
                         },
                         // onChangeHandler: "in parent component attach the function to be called."
                         // onChangeHandler: (event) => console.log(event.target.value),
