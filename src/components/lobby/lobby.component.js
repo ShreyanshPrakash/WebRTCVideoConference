@@ -4,11 +4,16 @@ import {
     Container,
     Grid,
     Typography,
+    Button,
 } from '@material-ui/core';
+import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 
 import {
     useGetUserMedia,
 } from 'src/hooks';
+import{
+    VideoPlaceholderComponent,
+} from 'src/reuseableComp';
 
 import './lobby.style.scss';
 
@@ -17,7 +22,7 @@ function LobbyComponent(){
     const [userStream, setUserStream] = useState("");
     const [participantsStream, setParticipantsStream] = useState("");
 
-    const userRef = useRef('');
+    const userVideoRef = useRef('');
 
     const mediaStream = useGetUserMedia({
         video: true,
@@ -26,8 +31,8 @@ function LobbyComponent(){
 
     useEffect( () => {
         if( mediaStream ){
-            userRef.current.srcObject = mediaStream;
-            userRef.current.play()
+            userVideoRef.current.srcObject = mediaStream;
+            userVideoRef.current.play()
         }
     }, [mediaStream])
 
@@ -35,19 +40,27 @@ function LobbyComponent(){
     return(
         <React.Fragment>
             <Container className="lobbyWrapper">
-                <Grid container justify="space-between" alignItems="center">
+                <Grid container justify="space-around" alignItems="center">
                     <Grid item className="videoFeedWrapper">
-                        <video
-                            className="userVideoStream"
-                            ref={userRef}
-                            muted={true}
-                        >
-                        </video>
+                        <VideoPlaceholderComponent 
+                            ref={userVideoRef}
+                            config={{
+                                muted: true,
+                            }}
+                        />
                     </Grid>
                     <Grid item className="meetingInfoWrapper">
                         <Typography>
                             Meeting name
                         </Typography>
+                        <Button
+                            fullWidth
+                            color="primary"
+                            variant="contained"
+                        >
+                            Go to Meeting
+                            <ArrowForwardIcon />
+                        </Button>
                     </Grid>
                 </Grid>
             </Container>
