@@ -13,7 +13,7 @@ import {
 } from 'src/hooks';
 import{
     VideoPlaceholderComponent,
-} from 'src/reuseableComp';
+} from 'src/reuseableComponents';
 
 import './lobby.style.scss';
 

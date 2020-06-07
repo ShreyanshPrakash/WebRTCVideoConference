@@ -9,7 +9,7 @@ import {
 import {
     LogoComponent,
     FormBuilderComponent,
-} from "src/reuseableComp";
+} from "src/reuseableComponents";
 import {
     createMeetingFormConfig,
     joinMeetingFormConfig,
