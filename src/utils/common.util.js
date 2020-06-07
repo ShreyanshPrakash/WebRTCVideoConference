@@ -1,4 +1,6 @@
+import { apiEndpoints } from 'src/config/api.config';
 
+let ENV_VARS;
 
 function setEnvVars( env ){
     ENV_VARS = env;
@@ -44,18 +46,6 @@ function removeDataFromSessionStorage( keys, removeAll = false ){
 
 }
 
-function generateUiString( string = "", splitChar, joinChar, capitalCase ){
-    if( splitChar ){
-        string = string.split( splitChar );
-        string = string.map( word => capitalCase ? toCapitalCase( word ) : word );
-    }
-    if( joinChar ){
-        string = string.join( joinChar );
-    }
-    return string;
-}
-
-
 function getQueryParams( url ){
     let queryParams = {};
     url = url.replace( '?', '' ).split( '&' )
@@ -75,6 +65,5 @@ export{
     getDataFromSessionStorage,
     setDataToSessionStorage,
     removeDataFromSessionStorage,
-    generateUiString,
     getQueryParams,
 }

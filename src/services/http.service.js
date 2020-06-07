@@ -39,6 +39,10 @@ function setEnvEndpoints( apis ){
     apiEndpoints = apis[ ENV_VARS[ "ENV" ] ];
 }
 
+function getEnvEndpoints(){
+    return apiEndpoints;
+}
+
 
 function getAuthorization(){
     let authToken = sessionStorage.getItem('authToken');
@@ -117,4 +121,5 @@ export {
     createAxiosInstance,
     setEnvVarsForHttpClient,
     setEnvEndpoints,
+    getEnvEndpoints,
 }

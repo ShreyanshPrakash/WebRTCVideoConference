@@ -17,7 +17,7 @@ import {
   setEnvVarsForHttpClient, 
   setEnvEndpoints, 
   createAxiosInstance 
-} from 'src/services/http.service';
+} from 'src/services';
 
 
 import './App.css';
