@@ -41,13 +41,14 @@ function HomeComponent() {
         const {
             joinMeetingForm: {
                 joinMeeting: {
-                    meetingName,
+                    meetingUrl,
                     userName,
                 }
             }
         } = submitData;
-        // need to parse meeting name.
-        history.push(`/lobby?userName=${userName}&meetingName=${meetingName}&meetingId=${getuuid()}&type=create`);
+        let url = new URL(meetingUrl);
+        let query = new URLSearchParams(url.search)
+        history.push(`/lobby?userName=${query.get('userName')}&meetingName=${query.get('meetingName')}&meetingId=${query.get('meetingId')}&type=join`);
     })
 
 

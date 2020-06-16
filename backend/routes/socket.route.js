@@ -18,17 +18,21 @@ function socketConnection(client, socket){
             success: true,
             message: "Join success."
         })
-        client.broadcast.to(`${req.meetingName}`).emit("message", "Joined chat ***");
-        // getGlobalSocket().of(`${req.meetingName}-${req.meetinId}`).on('connection', handleRoomJoin);
+        // client.broadcast.to(`${req.meetingName}`).emit("message", "Joined chat ***");
+        socket.of(`${req.meetingName}`).on('connection', client => handleRoomJoin(client,req));
     });
 
     
 
 }
 
-function handleRoomJoin(socket){
-    console.log("Joined room");
-    socket.emit("message","Joined successfull");
+// so store all these socket connection to a redis and get the object when needed.
+function handleRoomJoin(client,req){
+    console.log(`${req.meetingName} : ${req.userName}`);
+    socket.broadcast.emit("message",{
+        userName : req.userName,
+        meetingName : req.meetingName
+    });
 }
 
 let chatRoomMap = new Map();

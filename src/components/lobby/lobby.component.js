@@ -43,22 +43,14 @@ function LobbyComponent() {
     }, true);
 
 
-
-
     useEffect(() => {
         let query = getQueryParams(location.search)
         setMeetingInfo(query);
-
-        const meetingRoomConnection = io.connect('http://localhost:4200/');
-        meetingRoomConnection.emit('join', {
-            chatName: `${query.meetingName}-${query.meetingId}`,
-            meetingName: `${query.meetingName}`,
-            userName: `${query.userName}`
-        })
-        meetingRoomConnection.on('message', handleSocketMessage);
-        meetingRoomConnection.on('ack', handleAck);
-
-        setSocketConnection(meetingRoomConnection);
+        if (query.type === "create") {
+            createMeeting(query);
+        } else {
+            joinMeeting(query);
+        }
     }, [])
 
     useEffect(() => {
@@ -74,9 +66,26 @@ function LobbyComponent() {
     }
 
     const handleAck = (response) => {
+        let query = getQueryParams(location.search)
         console.log(response);
-        const meetingRoomConnection = io.connect(`http://localhost:4200/${meetingInfo.meetingName}-${meetingInfo.meetinId}`);
+
+    }
+
+    const joinMeeting = (meetingInfo = {}) => {
+        const meetingRoomConnection = io.connect(`http://localhost:4200/${meetingInfo.meetingName}`);
         meetingRoomConnection.on('message', handleSocketMessage);
+        setSocketConnection(meetingRoomConnection);
+    }
+
+    const createMeeting = (meetingInfo = {}) => {
+        const meetingRoomConnection = io.connect('http://localhost:4200/');
+        meetingRoomConnection.emit('createNamespace', {
+            chatName: `${meetingInfo.meetingName}-${meetingInfo.meetingId}`,
+            meetingName: `${meetingInfo.meetingName}`,
+            userName: `${meetingInfo.userName}`
+        })
+        meetingRoomConnection.on('message', handleSocketMessage);
+        meetingRoomConnection.on('ack', () => joinMeeting(meetingInfo));
         setSocketConnection(meetingRoomConnection);
     }
 

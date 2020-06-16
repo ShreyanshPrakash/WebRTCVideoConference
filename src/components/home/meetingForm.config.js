@@ -96,7 +96,7 @@ const joinMeetingFormConfig = [
                         label: "Meeting url",
                         // placeholder: "",
                         inputProps: {
-                            maxLength: 50,
+                            maxLength: 200,
                             required: true,
                         },
                         keys: {
