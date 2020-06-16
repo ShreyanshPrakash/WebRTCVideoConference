@@ -47,7 +47,7 @@ function HomeComponent() {
             }
         } = submitData;
         // need to parse meeting name.
-        history.push(`/lobby?userName=${userName}&meetingName=${meetingName}&type=join`);
+        history.push(`/lobby?userName=${userName}&meetingName=${meetingName}&meetingId=${getuuid()}&type=create`);
     })
 
 

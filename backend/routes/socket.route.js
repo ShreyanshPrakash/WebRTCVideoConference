@@ -2,7 +2,8 @@
 
 function socketConnection(socket){
 
-    console.log(socket);
+    // console.log(socket);
+    socket.emit('message',{name:'connected'})
 
 }
 

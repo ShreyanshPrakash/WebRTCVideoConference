@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
+
+import io from 'socket.io-client';
 import {
     Container,
     Grid,
@@ -9,21 +11,20 @@ import {
 } from '@material-ui/core';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 
+
 import {
     getQueryParams,
 } from 'src/utils';
-
-import io from 'socket.io-client';
-
 import {
     useGetUserMedia,
 } from 'src/hooks';
 import {
     VideoPlaceholderComponent,
 } from 'src/reuseableComponents';
+import { MeetingInfoModel } from 'src/models';
+
 
 import './lobby.style.scss';
-import { MeetingInfoModel } from 'src/models';
 
 function LobbyComponent() {
 
@@ -40,7 +41,11 @@ function LobbyComponent() {
         audio: true,
     }, true);
 
-    const meetingRoom = io.connect('http://localhost:3000/chat')
+    const meetingRoomConnection = io.connect('http://localhost:4200/');
+
+    meetingRoomConnection.on('message', msg => {
+        console.log(msg)
+    })
 
 
     useEffect(() => {
