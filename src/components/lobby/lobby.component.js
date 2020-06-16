@@ -31,6 +31,7 @@ function LobbyComponent() {
     const [userStream, setUserStream] = useState("");
     const [participantsStream, setParticipantsStream] = useState("");
     const [meetingInfo, setMeetingInfo] = useState(new MeetingInfoModel());
+    const [socketConnection, setSocketConnection] = useState({});
 
     const location = useLocation();
 
@@ -41,16 +42,23 @@ function LobbyComponent() {
         audio: true,
     }, true);
 
-    const meetingRoomConnection = io.connect('http://localhost:4200/');
 
-    meetingRoomConnection.on('message', msg => {
-        console.log(msg)
-    })
 
 
     useEffect(() => {
         let query = getQueryParams(location.search)
         setMeetingInfo(query);
+
+        const meetingRoomConnection = io.connect('http://localhost:4200/');
+        meetingRoomConnection.emit('join', {
+            chatName: `${query.meetingName}-${query.meetingId}`,
+            meetingName: `${query.meetingName}`,
+            userName: `${query.userName}`
+        })
+        meetingRoomConnection.on('message', handleSocketMessage);
+        meetingRoomConnection.on('ack', handleAck);
+
+        setSocketConnection(meetingRoomConnection);
     }, [])
 
     useEffect(() => {
@@ -59,6 +67,19 @@ function LobbyComponent() {
             userVideoRef.current.play()
         }
     }, [mediaStream])
+
+
+    const handleSocketMessage = (response) => {
+        console.log(response);
+    }
+
+    const handleAck = (response) => {
+        console.log(response);
+        const meetingRoomConnection = io.connect(`http://localhost:4200/${meetingInfo.meetingName}-${meetingInfo.meetinId}`);
+        meetingRoomConnection.on('message', handleSocketMessage);
+        setSocketConnection(meetingRoomConnection);
+    }
+
 
 
     return (

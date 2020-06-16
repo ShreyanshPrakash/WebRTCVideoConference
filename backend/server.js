@@ -14,6 +14,7 @@ const {
     // setLogFileDescriptor,
     initLogFile,
     log,
+    setGlobalSocket,
 } = require('./utils');
 const {
     socketConnection,
@@ -36,7 +37,8 @@ app.use(
 
 // initLogFile();
 
-socket.on( 'connection', socketConnection)
+socket.on( 'connection', client => socketConnection(client,socket))
+setGlobalSocket(socket);
 
 
 

@@ -11,6 +11,11 @@ const {
     log,
 } = require('./logger.util');
 
+const {
+    setGlobalSocket,
+    getGlobalSocket,
+} = require('./common.util');
+
 
 module.exports = {
     iniLogFile,
@@ -23,4 +28,7 @@ module.exports = {
     getLogFileName,
 
     log,
+
+    setGlobalSocket,
+    getGlobalSocket,
 }
