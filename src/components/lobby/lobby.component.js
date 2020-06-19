@@ -49,7 +49,7 @@ function LobbyComponent() {
         if (query.type === "create") {
             createMeeting(query);
         } else {
-            joinMeeting(query);
+            joinMeeting({},query);
         }
     }, [])
 
@@ -60,35 +60,48 @@ function LobbyComponent() {
         }
     }, [mediaStream])
 
+    const createMeeting = (meetingInfo = {}) => {
+        const meetingRoomConnection = io.connect('http://localhost:4200/');
+        meetingRoomConnection.emit('createNamespace', {
+            meetingName: `${meetingInfo.meetingName}`,
+            meetingId: `${meetingInfo.meetingId}`,
+            userName: `${meetingInfo.userName}`
+        })
+        meetingRoomConnection.on('message', handleSocketMessage);
+        meetingRoomConnection.on('ack', (response) => joinMeeting(response,meetingInfo));
+        setSocketConnection(meetingRoomConnection);
+    }
+
+    const joinMeeting = (response={},meetingInfo = {}) => {
+        // console.log(response);
+        const meetingRoomConnection = io.connect(`http://localhost:4200/${meetingInfo.meetingName}`);
+        meetingRoomConnection.on('connect', handleSocketConnect);
+        meetingRoomConnection.emit("message",{
+            meetingName: `${meetingInfo.meetingName}`,
+            meetingId: `${meetingInfo.meetingId}`,
+            userName: `${meetingInfo.userName}`
+        })
+        meetingRoomConnection.on('message', handleSocketMessage);
+        setSocketConnection(meetingRoomConnection);
+    }
+
 
     const handleSocketMessage = (response) => {
         console.log(response);
     }
 
-    const handleAck = (response) => {
-        let query = getQueryParams(location.search)
-        console.log(response);
+    const handleSocketConnect = (event) => {
+        console.log("Joined to the chat room.");
 
     }
 
-    const joinMeeting = (meetingInfo = {}) => {
-        const meetingRoomConnection = io.connect(`http://localhost:4200/${meetingInfo.meetingName}`);
-        meetingRoomConnection.on('message', handleSocketMessage);
-        setSocketConnection(meetingRoomConnection);
-    }
+    const handleSocketEvent = (event) => {
 
-    const createMeeting = (meetingInfo = {}) => {
-        const meetingRoomConnection = io.connect('http://localhost:4200/');
-        meetingRoomConnection.emit('createNamespace', {
-            chatName: `${meetingInfo.meetingName}-${meetingInfo.meetingId}`,
-            meetingName: `${meetingInfo.meetingName}`,
-            userName: `${meetingInfo.userName}`
-        })
-        meetingRoomConnection.on('message', handleSocketMessage);
-        meetingRoomConnection.on('ack', () => joinMeeting(meetingInfo));
-        setSocketConnection(meetingRoomConnection);
-    }
+        switch(event.type){
 
+        }
+        
+    }
 
 
     return (

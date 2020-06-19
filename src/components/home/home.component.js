@@ -48,7 +48,7 @@ function HomeComponent() {
         } = submitData;
         let url = new URL(meetingUrl);
         let query = new URLSearchParams(url.search)
-        history.push(`/lobby?userName=${query.get('userName')}&meetingName=${query.get('meetingName')}&meetingId=${query.get('meetingId')}&type=join`);
+        history.push(`/lobby?userName=${userName}&meetingName=${query.get('meetingName')}&meetingId=${query.get('meetingId')}&type=join`);
     })
 
 
