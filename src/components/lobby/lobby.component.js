@@ -14,6 +14,7 @@ import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 
 import {
     getQueryParams,
+    log,
 } from 'src/utils';
 import {
     useGetUserMedia,
@@ -30,6 +31,7 @@ function LobbyComponent() {
 
     const [userStream, setUserStream] = useState("");
     const [participantsStream, setParticipantsStream] = useState("");
+
     const [meetingInfo, setMeetingInfo] = useState(new MeetingInfoModel());
     const [socketConnection, setSocketConnection] = useState({});
 
@@ -42,17 +44,6 @@ function LobbyComponent() {
         audio: true,
     }, true);
 
-
-    useEffect(() => {
-        let query = getQueryParams(location.search)
-        setMeetingInfo(query);
-        if (query.type === "create") {
-            createMeeting(query);
-        } else {
-            joinMeeting({},query);
-        }
-    }, [])
-
     useEffect(() => {
         if (mediaStream) {
             userVideoRef.current.srcObject = mediaStream;
@@ -60,47 +51,126 @@ function LobbyComponent() {
         }
     }, [mediaStream])
 
+
+    useEffect(() => {
+        let query = getQueryParams(location.search)
+        setMeetingInfo(query);
+        if (query.type === "create") {
+            createMeeting(query);
+        } else {
+            joinMeeting({}, query);
+        }
+    }, [])
+
+
+
     const createMeeting = (meetingInfo = {}) => {
         const meetingRoomConnection = io.connect('http://localhost:4200/');
-        meetingRoomConnection.emit('createNamespace', {
-            meetingName: `${meetingInfo.meetingName}`,
-            meetingId: `${meetingInfo.meetingId}`,
-            userName: `${meetingInfo.userName}`
-        })
-        meetingRoomConnection.on('message', handleSocketMessage);
-        meetingRoomConnection.on('ack', (response) => joinMeeting(response,meetingInfo));
-        setSocketConnection(meetingRoomConnection);
+        meetingRoomConnection.on('connect', (event) => {
+            setSocketConnection(meetingRoomConnection);
+            handleSocketEvent({
+                type: "connect",
+                data: event,
+                metaData: {
+                    message: "Connected to the create meeting server."
+                }
+            });
+            meetingRoomConnection.on('message', msg => handleSocketEvent({
+                type: "message",
+                data: msg
+            }));
+            meetingRoomConnection.on('disconnect', event => handleSocketEvent({
+                type: "disconnect",
+                data: event
+            }));
+            meetingRoomConnection.on('ack', response => handleSocketEvent(response));
+
+            // Logic will go below
+            meetingRoomConnection.emit('createNamespace', {
+                meetingName: `${meetingInfo.meetingName}`,
+                meetingId: `${meetingInfo.meetingId}`,
+                userName: `${meetingInfo.userName}`
+            })
+        });
+        meetingRoomConnection.on('error', error => handleSocketEvent({
+            type: "error",
+            data: error
+        }));
+
     }
 
-    const joinMeeting = (response={},meetingInfo = {}) => {
-        // console.log(response);
+    const joinMeeting = (response = {}, meetingInfo = {}) => {
         const meetingRoomConnection = io.connect(`http://localhost:4200/${meetingInfo.meetingName}`);
-        meetingRoomConnection.on('connect', handleSocketConnect);
-        meetingRoomConnection.emit("message",{
-            meetingName: `${meetingInfo.meetingName}`,
-            meetingId: `${meetingInfo.meetingId}`,
-            userName: `${meetingInfo.userName}`
-        })
-        meetingRoomConnection.on('message', handleSocketMessage);
-        setSocketConnection(meetingRoomConnection);
+        meetingRoomConnection.on('connect', (event) => {
+            setSocketConnection(meetingRoomConnection);
+            handleSocketEvent({
+                type: "connect",
+                data: event,
+                metaData: {
+                    message: "Connected to the meeting server."
+                }
+            });
+            
+            meetingRoomConnection.on('message', msg => handleSocketEvent({
+                type: "message",
+                data: msg
+            }));
+            meetingRoomConnection.on('disconnect', event => handleSocketEvent({
+                type: "disconnect",
+                data: event
+            }));
+            meetingRoomConnection.on('ack', response => handleSocketEvent(response));
+
+            // Logic goes here
+            meetingRoomConnection.emit("message", {
+                meetingName: `${meetingInfo.meetingName}`,
+                meetingId: `${meetingInfo.meetingId}`,
+                userName: `${meetingInfo.userName}`
+            });
+        });
+        meetingRoomConnection.on('error', error => handleSocketEvent({
+            type: "error",
+            data: error
+        }));
+
     }
 
 
-    const handleSocketMessage = (response) => {
-        console.log(response);
-    }
+    const handleSocketEvent = ({type,data,metaData}) => {
+        log({type,data})
+        
+        switch (type) {
 
-    const handleSocketConnect = (event) => {
-        console.log("Joined to the chat room.");
+            case "create":
+                log(data);
+                break;
 
-    }
+            case "join":
+                log(data);
+                break;
 
-    const handleSocketEvent = (event) => {
+            case "message":
+                log(data);
+                break;
 
-        switch(event.type){
+            case "connect":
+                log(metaData);
+                break;
+
+            case "disconnect":
+                log(`Disconnected from server - ${data}`);
+                break;
+
+            case "error":
+                log(`Error - ${data}`);
+                break;
+
+            default:
+                log("Defualt case :",{type,data});
+                break;
 
         }
-        
+
     }
 
 

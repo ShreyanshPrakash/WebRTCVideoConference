@@ -60,6 +60,11 @@ function getuuid(){
     return Math.random().toString(16).replace('0.', '');
 }
 
+// Will add logger features here.
+export function log(logMessage, forEnv = ""){
+    console.log(logMessage);
+}
+
 
 
 export{
