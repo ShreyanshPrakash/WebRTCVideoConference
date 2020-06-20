@@ -83,10 +83,10 @@ function LobbyComponent() {
                 type: "disconnect",
                 data: event
             }));
-            meetingRoomConnection.on('ack', response => handleSocketEvent(response));
+            meetingRoomConnection.on('acknowledgement', response => handleSocketEvent(response));
 
             // Logic will go below
-            meetingRoomConnection.emit('createNamespace', {
+            meetingRoomConnection.emit('createMeeting', {
                 meetingName: `${meetingInfo.meetingName}`,
                 meetingId: `${meetingInfo.meetingId}`,
                 userName: `${meetingInfo.userName}`
@@ -138,7 +138,7 @@ function LobbyComponent() {
 
     const handleSocketEvent = ({type,data,metaData}) => {
         log({type,data})
-        
+
         switch (type) {
 
             case "create":
