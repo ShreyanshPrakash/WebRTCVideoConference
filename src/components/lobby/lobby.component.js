@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 
 import io from 'socket.io-client';
+import Peer from 'simple-peer';
 import {
     Container,
     Grid,
@@ -26,6 +27,7 @@ import { MeetingInfoModel } from 'src/models';
 
 
 import './lobby.style.scss';
+// import SimplePeer from 'simple-peer';
 
 function LobbyComponent() {
 
@@ -58,13 +60,14 @@ function LobbyComponent() {
         if (query.type === "create") {
             createMeeting(query);
         } else {
-            joinMeeting({}, query);
+            joinMeeting(query);
         }
     }, [])
 
 
 
-    const createMeeting = (meetingInfo = {}) => {
+    const createMeeting = (meetingInfo = new MeetingInfoModel()) => {
+        console.log(meetingInfo)
         const meetingRoomConnection = io.connect('http://localhost:4200/');
         meetingRoomConnection.on('connect', (event) => {
             setSocketConnection(meetingRoomConnection);
@@ -77,13 +80,20 @@ function LobbyComponent() {
             });
             meetingRoomConnection.on('message', msg => handleSocketEvent({
                 type: "message",
-                data: msg
+                data: msg,
+                socketRef: meetingRoomConnection
             }));
             meetingRoomConnection.on('disconnect', event => handleSocketEvent({
                 type: "disconnect",
-                data: event
+                data: event,
+                socketRef: meetingRoomConnection
             }));
-            meetingRoomConnection.on('acknowledgement', response => handleSocketEvent(response));
+            meetingRoomConnection.on('acknowledgement', response => handleSocketEvent({
+                type: "acknowledgement",
+                data: response,
+                socketRef: meetingRoomConnection,
+                meetingInfo: meetingInfo,
+            }));
 
             // Logic will go below
             meetingRoomConnection.emit('createMeeting', {
@@ -97,9 +107,32 @@ function LobbyComponent() {
             data: error
         }));
 
+        let peer = new Peer({
+            initiator: true,
+            stream: mediaStream,
+            trickle: false,
+        });
+
+        peer.on('signal', signal => handlePeerEvents({
+            type: "signal",
+            data: signal,
+            socketRef: meetingRoomConnection
+        }));
+        peer.on('stream', stream => handlePeerEvents({
+            type: "stream",
+            data: stream,
+            socketRef: meetingRoomConnection
+        }));
+        peer.on('close', event => handlePeerEvents({
+            type: "close",
+            data: event,
+            socketRef: meetingRoomConnection
+        }));
+
     }
 
-    const joinMeeting = (response = {}, meetingInfo = {}) => {
+    const joinMeeting = (meetingInfo = {}) => {
+        console.log(meetingInfo)
         const meetingRoomConnection = io.connect(`http://localhost:4200/${meetingInfo.meetingName}`);
         meetingRoomConnection.on('connect', (event) => {
             setSocketConnection(meetingRoomConnection);
@@ -110,7 +143,7 @@ function LobbyComponent() {
                     message: "Connected to the meeting server."
                 }
             });
-            
+
             meetingRoomConnection.on('message', msg => handleSocketEvent({
                 type: "message",
                 data: msg
@@ -121,8 +154,13 @@ function LobbyComponent() {
             }));
             meetingRoomConnection.on('ack', response => handleSocketEvent(response));
 
+            meetingRoomConnection.on('joined', response => handleSocketEvent({
+                type: "joined",
+                data: response,
+            }));
+
             // Logic goes here
-            meetingRoomConnection.emit("message", {
+            meetingRoomConnection.emit("indentify", {
                 meetingName: `${meetingInfo.meetingName}`,
                 meetingId: `${meetingInfo.meetingId}`,
                 userName: `${meetingInfo.userName}`
@@ -133,11 +171,33 @@ function LobbyComponent() {
             data: error
         }));
 
+        let peer = new Peer({
+            initiator: false,
+            stream: mediaStream,
+            trickle: false,
+        });
+
+        peer.on('signal', signal => handlePeerEvents({
+            type: "signal",
+            data: signal,
+            socketRef: meetingRoomConnection
+        }));
+        peer.on('stream', stream => handlePeerEvents({
+            type: "stream",
+            data: stream,
+            socketRef: meetingRoomConnection
+        }));
+        peer.on('close', event => handlePeerEvents({
+            type: "close",
+            data: event,
+            socketRef: meetingRoomConnection
+        }));
+
     }
 
 
-    const handleSocketEvent = ({type,data,metaData}) => {
-        log({type,data})
+    const handleSocketEvent = ({ type, data, metaData, meetingInfo }) => {
+        log({ type, data })
 
         switch (type) {
 
@@ -145,7 +205,7 @@ function LobbyComponent() {
                 log(data);
                 break;
 
-            case "join":
+            case "joined":
                 log(data);
                 break;
 
@@ -165,12 +225,46 @@ function LobbyComponent() {
                 log(`Error - ${data}`);
                 break;
 
+            case "acknowledgement":
+                log('acknowledgement : ',data);
+                joinMeeting(meetingInfo);
+                break;
+
             default:
-                log("Defualt case :",{type,data});
+                log("Defualt case :", { type, data });
                 break;
 
         }
 
+    }
+
+    const handlePeerEvents = ({ type, data, socketRef }) => {
+        console.log({ type, data });
+
+        switch (type) {
+
+            case "signal":
+                log('Signal : ', data)
+                socketRef.send(data);
+                break;
+
+            case "stream":
+                log('stream : ', data)
+                break;
+
+            case "close":
+                log('close : ', data)
+                break;
+
+            default:
+                log('default : ', { type, data })
+                break;
+        }
+    }
+
+    const handleGoToMeeting = (event) => {
+        console.log("Clicked -------------");
+        socketConnection.send("Hello world");
     }
 
 
@@ -197,6 +291,7 @@ function LobbyComponent() {
                             fullWidth
                             color="primary"
                             variant="contained"
+                            onClick={handleGoToMeeting}
                         >
                             Go to Meeting
                             <ArrowForwardIcon />

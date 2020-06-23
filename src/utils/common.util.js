@@ -61,8 +61,8 @@ function getuuid(){
 }
 
 // Will add logger features here.
-export function log(logMessage, forEnv = ""){
-    console.log(logMessage);
+export function log(logMessage,logPayload = "", forEnv = ""){
+    console.log(logMessage,logPayload);
 }
 
 

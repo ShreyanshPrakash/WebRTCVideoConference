@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
-const socket = require('socket.io')(http);
+const io = require('socket.io')(http);
 const cors = require('cors');
 
 const { 
@@ -37,8 +37,8 @@ app.use(
 
 // initLogFile();
 
-socket.on( 'connection', client => socketConnection(client,socket))
-setGlobalSocket(socket);
+io.on( 'connection', client => socketConnection(client,io))
+setGlobalSocket(io);
 
 
 
