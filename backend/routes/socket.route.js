@@ -26,13 +26,19 @@ function createNamespace(client, io, req) {
 // so store all these socket connection to a redis and get the object when needed.
 function handleRoomJoin(client, io) {
     // console.log(`${req.userName} : ${req.meetingName} : Join Room`);
+    client.on("indentify", res => {
+        console.log(res)
+        client.broadcast.emit("joined", res);
+    });
+
+    
     client.on("message", msg => {
         client.broadcast.emit("message", msg)
     });
-    client.on("indentify", res => {
-        client.broadcast.emit("joined", res);
-    });
     client.on("offer", offer => console.log(offer));
+    client.on("signal", signal => {
+        client.broadcast.emit("offer", signal)
+    });
 }
 
 let chatRoomMap = new Map();

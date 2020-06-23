@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 
 
@@ -27,7 +27,6 @@ import { MeetingInfoModel } from 'src/models';
 
 
 import './lobby.style.scss';
-// import SimplePeer from 'simple-peer';
 
 function LobbyComponent() {
 
@@ -65,9 +64,32 @@ function LobbyComponent() {
     }, [])
 
 
+    useEffect( () => {
+        if(Object.keys( socketConnection ).length ){
+            socketConnection.on('message', msg => handleSocketEvent({
+                type: "message",
+                data: msg,
+            }));
+            socketConnection.on('disconnect', event => handleSocketEvent({
+                type: "disconnect",
+                data: event,
+            }));
+            
+            socketConnection.on('error', error => handleSocketEvent({
+                type: "error",
+                data: error
+            }));
+            socketConnection.on('joined', response => handleSocketEvent({
+                type: "joined",
+                data: response,
+            }));
+            
+            initPeer(meetingInfo);
+        }
+    }, [socketConnection])
+
 
     const createMeeting = (meetingInfo = new MeetingInfoModel()) => {
-        console.log(meetingInfo)
         const meetingRoomConnection = io.connect('http://localhost:4200/');
         meetingRoomConnection.on('connect', (event) => {
             setSocketConnection(meetingRoomConnection);
@@ -78,23 +100,12 @@ function LobbyComponent() {
                     message: "Connected to the create meeting server."
                 }
             });
-            meetingRoomConnection.on('message', msg => handleSocketEvent({
-                type: "message",
-                data: msg,
-                socketRef: meetingRoomConnection
-            }));
-            meetingRoomConnection.on('disconnect', event => handleSocketEvent({
-                type: "disconnect",
-                data: event,
-                socketRef: meetingRoomConnection
-            }));
             meetingRoomConnection.on('acknowledgement', response => handleSocketEvent({
                 type: "acknowledgement",
                 data: response,
                 socketRef: meetingRoomConnection,
                 meetingInfo: meetingInfo,
             }));
-
             // Logic will go below
             meetingRoomConnection.emit('createMeeting', {
                 meetingName: `${meetingInfo.meetingName}`,
@@ -102,37 +113,9 @@ function LobbyComponent() {
                 userName: `${meetingInfo.userName}`
             })
         });
-        meetingRoomConnection.on('error', error => handleSocketEvent({
-            type: "error",
-            data: error
-        }));
-
-        let peer = new Peer({
-            initiator: true,
-            stream: mediaStream,
-            trickle: false,
-        });
-
-        peer.on('signal', signal => handlePeerEvents({
-            type: "signal",
-            data: signal,
-            socketRef: meetingRoomConnection
-        }));
-        peer.on('stream', stream => handlePeerEvents({
-            type: "stream",
-            data: stream,
-            socketRef: meetingRoomConnection
-        }));
-        peer.on('close', event => handlePeerEvents({
-            type: "close",
-            data: event,
-            socketRef: meetingRoomConnection
-        }));
-
     }
 
     const joinMeeting = (meetingInfo = {}) => {
-        console.log(meetingInfo)
         const meetingRoomConnection = io.connect(`http://localhost:4200/${meetingInfo.meetingName}`);
         meetingRoomConnection.on('connect', (event) => {
             setSocketConnection(meetingRoomConnection);
@@ -143,22 +126,6 @@ function LobbyComponent() {
                     message: "Connected to the meeting server."
                 }
             });
-
-            meetingRoomConnection.on('message', msg => handleSocketEvent({
-                type: "message",
-                data: msg
-            }));
-            meetingRoomConnection.on('disconnect', event => handleSocketEvent({
-                type: "disconnect",
-                data: event
-            }));
-            meetingRoomConnection.on('ack', response => handleSocketEvent(response));
-
-            meetingRoomConnection.on('joined', response => handleSocketEvent({
-                type: "joined",
-                data: response,
-            }));
-
             // Logic goes here
             meetingRoomConnection.emit("indentify", {
                 meetingName: `${meetingInfo.meetingName}`,
@@ -166,34 +133,28 @@ function LobbyComponent() {
                 userName: `${meetingInfo.userName}`
             });
         });
-        meetingRoomConnection.on('error', error => handleSocketEvent({
-            type: "error",
-            data: error
-        }));
+    }
 
+    const initPeer = useCallback( () => {
+        console.log("Init perr *******************")
         let peer = new Peer({
-            initiator: false,
+            initiator: meetingInfo.type === "create" ? true : false,
             stream: mediaStream,
             trickle: false,
         });
-
         peer.on('signal', signal => handlePeerEvents({
             type: "signal",
             data: signal,
-            socketRef: meetingRoomConnection
         }));
         peer.on('stream', stream => handlePeerEvents({
             type: "stream",
             data: stream,
-            socketRef: meetingRoomConnection
         }));
         peer.on('close', event => handlePeerEvents({
             type: "close",
             data: event,
-            socketRef: meetingRoomConnection
         }));
-
-    }
+    }, [socketConnection,meetingInfo])
 
 
     const handleSocketEvent = ({ type, data, metaData, meetingInfo }) => {
@@ -207,6 +168,7 @@ function LobbyComponent() {
 
             case "joined":
                 log(data);
+                initPeer(meetingInfo);
                 break;
 
             case "message":
@@ -238,14 +200,14 @@ function LobbyComponent() {
 
     }
 
-    const handlePeerEvents = ({ type, data, socketRef }) => {
+    const handlePeerEvents = useCallback( ({ type, data }) => {
         console.log({ type, data });
-
+        console.log(socketConnection);
         switch (type) {
 
             case "signal":
                 log('Signal : ', data)
-                socketRef.send(data);
+                socketConnection.emit("signal",data);
                 break;
 
             case "stream":
@@ -260,10 +222,9 @@ function LobbyComponent() {
                 log('default : ', { type, data })
                 break;
         }
-    }
+    }, [socketConnection])
 
     const handleGoToMeeting = (event) => {
-        console.log("Clicked -------------");
         socketConnection.send("Hello world");
     }
 
