@@ -16,7 +16,7 @@ function createNamespace(client, io, req) {
     let namespace = io.of(`${req.meetingName}`)
         .on('connection', client => handleRoomJoin(client, io));
     setChatMap(`${req.meetingName}-${req.meetingId}`, namespace);
-    client.emit('acknowledgement', {
+    client.emit('meetingCreated', {
         type: "create",
         success: true,
         message: `Meeting created with name : ${req.meetingName}-${req.meetingId}`
@@ -26,9 +26,9 @@ function createNamespace(client, io, req) {
 // so store all these socket connection to a redis and get the object when needed.
 function handleRoomJoin(client, io) {
     // console.log(`${req.userName} : ${req.meetingName} : Join Room`);
-    client.on("indentify", res => {
+    client.on("userCheckin", res => {
         console.log(res)
-        client.broadcast.emit("joined", res);
+        client.broadcast.emit("newUser", res);
     });
 
     

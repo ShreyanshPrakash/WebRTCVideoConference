@@ -33,6 +33,9 @@ function LobbyComponent() {
     const [userStream, setUserStream] = useState("");
     const [participantsStream, setParticipantsStream] = useState("");
 
+    const [userPeer, setUserPeer] = useState({});
+    const [participantsPeer, setParticipantsPeer] = useState(new Map());
+
     const [meetingInfo, setMeetingInfo] = useState(new MeetingInfoModel());
     const [socketConnection, setSocketConnection] = useState({});
 
@@ -64,8 +67,11 @@ function LobbyComponent() {
     }, [])
 
 
-    useEffect( () => {
-        if(Object.keys( socketConnection ).length ){
+    useEffect(() => {
+        if (Object.keys(socketConnection).length) {
+            initPeer(meetingInfo);
+
+            // Default Events
             socketConnection.on('message', msg => handleSocketEvent({
                 type: "message",
                 data: msg,
@@ -74,19 +80,40 @@ function LobbyComponent() {
                 type: "disconnect",
                 data: event,
             }));
-            
+
             socketConnection.on('error', error => handleSocketEvent({
                 type: "error",
                 data: error
             }));
-            socketConnection.on('joined', response => handleSocketEvent({
-                type: "joined",
+
+            // Custom Events
+            socketConnection.on('newUser', response => handleSocketEvent({
+                type: "newUser",
                 data: response,
             }));
-            
-            initPeer(meetingInfo);
+            socketConnection.on('signal', response => handleSocketEvent({
+                type: "signal",
+                data: response,
+            }));
         }
     }, [socketConnection])
+
+    useEffect( () => {
+        if( Object.keys(userPeer).length ){
+            userPeer.on('signal', signal => handlePeerEvents({
+                type: "signal",
+                data: signal,
+            }));
+            userPeer.on('stream', stream => handlePeerEvents({
+                type: "stream",
+                data: stream,
+            }));
+            userPeer.on('close', event => handlePeerEvents({
+                type: "close",
+                data: event,
+            }));
+        }
+    }, [userPeer])
 
 
     const createMeeting = (meetingInfo = new MeetingInfoModel()) => {
@@ -100,12 +127,14 @@ function LobbyComponent() {
                     message: "Connected to the create meeting server."
                 }
             });
-            meetingRoomConnection.on('acknowledgement', response => handleSocketEvent({
-                type: "acknowledgement",
+            meetingRoomConnection.on('meetingCreated', response => handleSocketEvent({
+                type: "meetingCreated",
                 data: response,
                 socketRef: meetingRoomConnection,
                 meetingInfo: meetingInfo,
             }));
+
+
             // Logic will go below
             meetingRoomConnection.emit('createMeeting', {
                 meetingName: `${meetingInfo.meetingName}`,
@@ -127,7 +156,7 @@ function LobbyComponent() {
                 }
             });
             // Logic goes here
-            meetingRoomConnection.emit("indentify", {
+            meetingRoomConnection.emit("userCheckin", {
                 meetingName: `${meetingInfo.meetingName}`,
                 meetingId: `${meetingInfo.meetingId}`,
                 userName: `${meetingInfo.userName}`
@@ -135,30 +164,20 @@ function LobbyComponent() {
         });
     }
 
-    const initPeer = useCallback( () => {
+    const initPeer = useCallback(() => {
         console.log("Init perr *******************")
         let peer = new Peer({
-            initiator: meetingInfo.type === "create" ? true : false,
+            initiator: meetingInfo.type !== "creates" ? true : false,
             stream: mediaStream,
             trickle: false,
         });
-        peer.on('signal', signal => handlePeerEvents({
-            type: "signal",
-            data: signal,
-        }));
-        peer.on('stream', stream => handlePeerEvents({
-            type: "stream",
-            data: stream,
-        }));
-        peer.on('close', event => handlePeerEvents({
-            type: "close",
-            data: event,
-        }));
-    }, [socketConnection,meetingInfo])
+        setUserPeer(peer);
+        return peer;
+    }, [socketConnection, meetingInfo])
 
 
-    const handleSocketEvent = ({ type, data, metaData, meetingInfo }) => {
-        log({ type, data })
+    const handleSocketEvent = useCallback( ({ type, data, metaData, meetingInfo }) => {
+        // log({ type, data })
 
         switch (type) {
 
@@ -166,9 +185,20 @@ function LobbyComponent() {
                 log(data);
                 break;
 
-            case "joined":
+            case "newUser":
                 log(data);
                 initPeer(meetingInfo);
+                break;
+
+            case "signal":
+                log(data);
+                console.log(userPeer)
+                if( !Object.keys(userPeer).length ){
+                    let peer = initPeer();
+                    peer.signal(data)
+                }else{
+                    userPeer.signal(data)
+                }
                 break;
 
             case "message":
@@ -187,8 +217,8 @@ function LobbyComponent() {
                 log(`Error - ${data}`);
                 break;
 
-            case "acknowledgement":
-                log('acknowledgement : ',data);
+            case "meetingCreated":
+                log('meetingCreated : ', data);
                 joinMeeting(meetingInfo);
                 break;
 
@@ -198,16 +228,16 @@ function LobbyComponent() {
 
         }
 
-    }
+    }, [userPeer])
 
-    const handlePeerEvents = useCallback( ({ type, data }) => {
-        console.log({ type, data });
-        console.log(socketConnection);
+    const handlePeerEvents = useCallback(({ type, data }) => {
+        // console.log({ type, data });
+        // console.log(socketConnection);
         switch (type) {
 
             case "signal":
                 log('Signal : ', data)
-                socketConnection.emit("signal",data);
+                socketConnection.emit("signal", data);
                 break;
 
             case "stream":
