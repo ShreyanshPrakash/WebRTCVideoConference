@@ -2,6 +2,7 @@ const url = require('url');
 
 const {
     getGlobalSocket,
+    log,
 } = require('./../utils');
 
 function socketConnection(client, io) {
@@ -15,12 +16,25 @@ function createNamespace(client, io, req) {
     // console.log(`${req.userName} : ${req.meetingName} : Create Namespace`);
     let namespace = io.of(`${req.meetingName}`)
         .on('connection', client => handleRoomJoin(client, io));
+
     setChatMap(`${req.meetingName}-${req.meetingId}`, namespace);
+
     client.emit('meetingCreated', {
         type: "create",
         success: true,
         message: `Meeting created with name : ${req.meetingName}-${req.meetingId}`
     });
+
+    log(
+        "Created new personal meeting : ",
+        req
+    )
+
+    console.log(
+        "Created new personal meeting : ",
+        req
+    )
+
 }
 
 // so store all these socket connection to a redis and get the object when needed.

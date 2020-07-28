@@ -92,12 +92,17 @@ function initLogFile(){
 
 
 function log(message){
-    fs.write(
-        getLogFileDescriptor(),
+    // fs.write(
+    //     getLogFileDescriptor(),
+    //     message,
+    //     (err) => {
+    //         console.log(err)
+    //     }
+    // )
+
+    console.log(
         message,
-        (err) => {
-            console.log(err)
-        }
+        payload
     )
 }
 
