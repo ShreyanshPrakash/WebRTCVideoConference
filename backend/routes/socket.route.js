@@ -7,6 +7,8 @@ const {
 
 function socketConnection(client, io) {
     // console.log(url.parse(socket.request.headers.referer));
+    // console.log(io.engine.clientsCount)
+    // console.log(client.id);
     // console.log(`New client to global meeting`);
     client.on('createMeeting', req => createNamespace(client, io, req));
 }

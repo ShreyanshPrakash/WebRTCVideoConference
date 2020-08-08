@@ -43,11 +43,14 @@ function LobbyComponent() {
 
     const userVideoRef = useRef('');
 
+
+    // Using react hooks to get access to video and audio
     const mediaStream = useGetUserMedia({
         video: true,
         audio: true,
     }, true);
 
+    // whenever media stream chnages, attach the new srcObject and play the stream video.
     useEffect(() => {
         if (mediaStream) {
             userVideoRef.current.srcObject = mediaStream;
@@ -55,7 +58,7 @@ function LobbyComponent() {
         }
     }, [mediaStream])
 
-
+    // IN Component mount, either create the meeting or join.
     useEffect(() => {
         let query = getQueryParams(location.search)
         setMeetingInfo(query);
@@ -66,7 +69,7 @@ function LobbyComponent() {
         }
     }, [])
 
-
+    // handling all the sockets events
     useEffect(() => {
         if (Object.keys(socketConnection).length) {
             initPeer(meetingInfo);
@@ -98,6 +101,7 @@ function LobbyComponent() {
         }
     }, [socketConnection])
 
+    // this might be wrong
     useEffect( () => {
         if( Object.keys(userPeer).length ){
             userPeer.on('signal', signal => handlePeerEvents({
@@ -116,6 +120,7 @@ function LobbyComponent() {
     }, [userPeer])
 
 
+    // Create a new meeting
     const createMeeting = (meetingInfo = new MeetingInfoModel()) => {
         const meetingRoomConnection = io.connect('http://localhost:4200/');
         meetingRoomConnection.on('connect', (event) => {
@@ -127,6 +132,8 @@ function LobbyComponent() {
                     message: "Connected to the create meeting server."
                 }
             });
+            // This is meeting room creating acknowledgement
+            // As soon as i get this acknowledgemnt, i will call joinMeetin to join the same created meeting.
             meetingRoomConnection.on('meetingCreated', response => handleSocketEvent({
                 type: "meetingCreated",
                 data: response,
@@ -135,7 +142,8 @@ function LobbyComponent() {
             }));
 
 
-            // Logic will go below
+            // Logic will go below.
+            // Asking server to create a meeting room.
             meetingRoomConnection.emit('createMeeting', {
                 meetingName: `${meetingInfo.meetingName}`,
                 meetingId: `${meetingInfo.meetingId}`,
@@ -144,6 +152,7 @@ function LobbyComponent() {
         });
     }
 
+    // Join the meeting room
     const joinMeeting = (meetingInfo = {}) => {
         const meetingRoomConnection = io.connect(`http://localhost:4200/${meetingInfo.meetingName}`);
         meetingRoomConnection.on('connect', (event) => {
@@ -164,8 +173,8 @@ function LobbyComponent() {
         });
     }
 
+
     const initPeer = useCallback(() => {
-        console.log("Init perr *******************")
         let peer = new Peer({
             initiator: meetingInfo.type !== "creates" ? true : false,
             stream: mediaStream,
@@ -175,7 +184,7 @@ function LobbyComponent() {
         return peer;
     }, [socketConnection, meetingInfo])
 
-
+    // Handle socket events.
     const handleSocketEvent = useCallback( ({ type, data, metaData, meetingInfo }) => {
         // log({ type, data })
 
@@ -230,6 +239,8 @@ function LobbyComponent() {
 
     }, [userPeer])
 
+
+    // Handling peer events
     const handlePeerEvents = useCallback(({ type, data }) => {
         // console.log({ type, data });
         // console.log(socketConnection);
