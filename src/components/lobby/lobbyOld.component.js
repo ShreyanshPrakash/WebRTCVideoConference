@@ -31,7 +31,7 @@ import './lobby.style.scss';
 function LobbyComponent() {
 
     const [userStream, setUserStream] = useState("");
-    const [participantsStream, setParticipantsStream] = useState([]);
+    const [participantsStream, setParticipantsStream] = useState("");
 
     const [userPeer, setUserPeer] = useState({});
     const [participantsPeer, setParticipantsPeer] = useState(new Map());
@@ -42,15 +42,6 @@ function LobbyComponent() {
     const location = useLocation();
 
     const userVideoRef = useRef('');
-
-
-    useEffect( () => {
-        console.log(participantsPeer);
-    }, [participantsPeer])
-
-    useEffect( () => {
-        console.log(participantsStream);
-    }, [participantsStream])
 
 
     // Using react hooks to get access to video and audio
@@ -257,33 +248,6 @@ function LobbyComponent() {
 
             case "signal":
                 log('Signal : ', data)
-                /*
-                 
-                */
-                if( data.type === "offer"){
-                    let peer = new Peer({
-                        initiator: false,
-                        stream: mediaStream,
-                        trickle: false,
-                    });
-                    peer.signal(data)
-                    peer.on('signal', signal => {
-                        console.log("dsadsa ", signal)
-                    })
-                    peer.on('stream', stream => {
-                        console.log("Streming")
-                        setParticipantsStream(state => [...state, stream])
-                    })
-                    setParticipantsPeer(
-                        state => [...state, peer]
-                    )
-                }else{
-                    let peer = new Peer({
-                        initiator: false,
-                        stream: mediaStream,
-                        trickle: false,
-                    });
-                }
                 socketConnection.emit("signal", data);
                 break;
 
